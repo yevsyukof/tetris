@@ -1,29 +1,39 @@
-package nsu.fit.yevsyukof.view;
+package nsu.fit.yevsyukof.view.panels;
 
+
+import nsu.fit.yevsyukof.model.Model;
+import nsu.fit.yevsyukof.model.ModelStates;
+import nsu.fit.yevsyukof.utils.Observer;
+import nsu.fit.yevsyukof.view.GameConstants;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class CellsField extends JPanel {
+public class CellsFieldPanel extends JPanel implements Observer {
 
-    private Cell[][] cellsField;
+    private final CellPanel[][] cellsField;
 
-    public CellsField() {
-        initCells();
-    }
+    private final Model model;
 
-    private void initCells() {
-        this.setSize(GameConstants.CELLS_FIELD_WIDTH * GameConstants.CELL_SIZE,
-                GameConstants.CELLS_FIELD_HEIGHT * GameConstants.CELL_SIZE);
-        // установлили размер панели
-        this.setLayout(new GridLayout(
+    public CellsFieldPanel(Model model) {
+        super(new GridLayout(
                 GameConstants.CELLS_FIELD_HEIGHT, GameConstants.CELLS_FIELD_WIDTH, 1, 1));
         // задали концепцию добавления элементов на эту панель - таблица из ячеек c отступами 1 и 1
 
-        cellsField = new Cell[GameConstants.CELLS_FIELD_HEIGHT][GameConstants.CELLS_FIELD_WIDTH];
+        this.model = model;
+
+        this.setSize(GameConstants.CELLS_FIELD_WIDTH * GameConstants.CELL_SIZE,
+                GameConstants.CELLS_FIELD_HEIGHT * GameConstants.CELL_SIZE);
+        // установлили размер панели
+
+        cellsField = new CellPanel[GameConstants.CELLS_FIELD_HEIGHT][GameConstants.CELLS_FIELD_WIDTH];
+        addCellsPanelsAtFieldPanel();
+    }
+
+    private void addCellsPanelsAtFieldPanel() {
         for (int x = 0; x < GameConstants.CELLS_FIELD_HEIGHT; ++x) {
             for (int y = 0; y < GameConstants.CELLS_FIELD_WIDTH; ++y) {
-                cellsField[x][y] = new Cell(x, y);
+                cellsField[x][y] = new CellPanel();
                 this.add(cellsField[x][y]);
             }
         }
@@ -47,6 +57,14 @@ public class CellsField extends JPanel {
             for (int y = 0; y < GameConstants.GAME_FIELD_WIDTH; ++y) {
                 cellsField[x - 4][y].setBackground(interpretColor(gameField[x][y]));
             }
+        }
+    }
+
+    @Override
+    public void handleEvent(ModelStates curModelState) {
+        switch (curModelState) {
+            case IN_PROCESS, END -> updateCellsField(model.getGameField());
+            case PAUSE -> { } // невозможный случай
         }
     }
 }

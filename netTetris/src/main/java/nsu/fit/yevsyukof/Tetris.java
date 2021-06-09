@@ -32,6 +32,8 @@ public class Tetris implements Runnable {
     @Override
     public void run() {
         model.addObserver(gui);
+        model.addObserver(gui.getCellsFieldPanel());
+        model.addObserver(gui.getStatisticPanel());
 
         javax.swing.SwingUtilities.invokeLater(gui);
 

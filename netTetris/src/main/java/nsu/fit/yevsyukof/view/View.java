@@ -1,7 +1,10 @@
 package nsu.fit.yevsyukof.view;
 
 import nsu.fit.yevsyukof.model.Model;
+import nsu.fit.yevsyukof.model.ModelStates;
 import nsu.fit.yevsyukof.utils.Observer;
+import nsu.fit.yevsyukof.view.panels.CellsFieldPanel;
+import nsu.fit.yevsyukof.view.panels.StatisticPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,35 +14,29 @@ import java.util.EventListener;
 
 public class View implements Observer, Runnable { // все манипуляции с отрисовкой будем производить через этот класс
 
-    private final Model model;
-    private final EventListener eventListener;
-
     private final JFrame mainWindow;
 
-    private final CellsField cellsField;
+    private final CellsFieldPanel cellsFieldPanel;
 
     private JMenuBar menuBar;
 
-    private JPanel statisticPanel;
-    private JLabel scores;
+    private final StatisticPanel statisticPanel;
 
 
     public View(Model model, EventListener eventListener) {
-        this.model = model;
-        this.eventListener = eventListener;
-
         mainWindow = new JFrame("a.Tetris");
         mainWindow.setSize(GameConstants.MAIN_WINDOW_WIDTH, GameConstants.MAIN_WINDOW_HEIGHT);
         mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainWindow.setLocationRelativeTo(null); // размещает главное окно в центре
         mainWindow.addKeyListener((KeyListener) eventListener);
 
-        cellsField = new CellsField();
-        createMenuPanel();
-        createStatisticPanel();
+        cellsFieldPanel = new CellsFieldPanel(model);
+        statisticPanel = new StatisticPanel(model);
+
+        createMenuBar(eventListener);
     }
 
-    private void createMenuPanel() {
+    private void createMenuBar(EventListener eventListener) {
         menuBar = new JMenuBar();
         menuBar.setPreferredSize(new Dimension(GameConstants.MENU_BAR_WIDTH, GameConstants.MENU_BAR_HEIGHT));
 
@@ -65,43 +62,18 @@ public class View implements Observer, Runnable { // все манипуляци
         menuBar.add(continueButton);
     }
 
-    private void createStatisticPanel() {
-        statisticPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        statisticPanel = new JPanel();
-        statisticPanel.setPreferredSize(
-                new Dimension(GameConstants.STATISTIC_PANEL_WIDTH, GameConstants.STATISTIC_PANEL_HEIGHT));
-
-        scores = new JLabel("Scores: " + model.getScores());
-        statisticPanel.add(scores);
-    }
-
-    public JFrame getMainWindow() {
-        return mainWindow;
-    }
-
-    public JPanel getCellsField() {
-        return cellsField;
-    }
-
     @Override
-    public void handleEvent() {
-        switch (model.getCurModelState()) {
-            case IN_PROCESS -> {
-                cellsField.updateCellsField(model.getGameField());
-                scores.setText("Scores: " + model.getScores());
-            }
-            case END -> {
-                cellsField.updateCellsField(model.getGameField());
-                JOptionPane.showMessageDialog(null, "End of game");
-            }
-            case PAUSE -> {} // невозможный случай
+    public void handleEvent(ModelStates curModelState) { // TODO
+        switch (curModelState) {
+            case END -> JOptionPane.showMessageDialog(null, "End of game");
+            case IN_PROCESS, PAUSE -> { }
         }
     }
 
     @Override
     public void run() {
         mainWindow.setJMenuBar(menuBar);
-        mainWindow.add(cellsField, BorderLayout.CENTER);
+        mainWindow.add(cellsFieldPanel, BorderLayout.CENTER);
         mainWindow.add(statisticPanel, BorderLayout.EAST);
 
         JPanel emptyPanel = new JPanel();
@@ -111,5 +83,13 @@ public class View implements Observer, Runnable { // все манипуляци
         mainWindow.setResizable(false);
         mainWindow.setFocusable(true);
         mainWindow.setVisible(true);
+    }
+
+    public CellsFieldPanel getCellsFieldPanel() {
+        return cellsFieldPanel;
+    }
+
+    public StatisticPanel getStatisticPanel() {
+        return statisticPanel;
     }
 }

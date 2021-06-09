@@ -171,7 +171,7 @@ public class Model implements Observable {
     @Override
     public void notifyObservers() {
         for (Observer observer : observers) {
-            observer.handleEvent();
+            observer.handleEvent(curModelState);
         }
     }
 }
